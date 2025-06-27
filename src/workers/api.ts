@@ -46,14 +46,29 @@ export default {
         return new Response('API endpoint not found', { status: 404, headers: corsHeaders });
       }
 
-      // Serve the React app for all other routes (SPA routing)
-      const html = `<!DOCTYPE html>
+      // Check if user is authenticated for dashboard routes
+      if (path.startsWith('/dashboard')) {
+        return serveDashboardApp();
+      }
+
+      // Serve login page for root and other routes
+      return serveLoginPage();
+
+    } catch (error) {
+      console.error('Server Error:', error);
+      return serveErrorPage(error);
+    }
+  },
+};
+
+function serveLoginPage() {
+  const html = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💼</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CloudCollect - Debt Management Platform</title>
+    <title>CloudCollect - Login</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
       
@@ -166,6 +181,12 @@ export default {
         color: white;
         font-size: 2rem;
         font-weight: 800;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }
+      
+      .logo:hover {
+        transform: scale(1.05);
       }
       
       .app-title {
@@ -209,7 +230,7 @@ export default {
         font-size: 1rem;
         transition: all 0.2s ease;
         background: white;
-        font-family: 'Inter', monospace;
+        font-family: 'Inter', sans-serif;
       }
       
       .form-input:focus {
@@ -240,7 +261,7 @@ export default {
         box-shadow: 0 4px 15px rgba(var(--primary-500), 0.3);
       }
       
-      .btn:hover {
+      .btn:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(var(--primary-500), 0.4);
       }
@@ -346,89 +367,87 @@ export default {
     </style>
   </head>
   <body>
-    <div id="root">
-      <div class="app-container">
-        <div class="login-card">
-          <div class="logo-container">
-            <div class="logo">CC</div>
-            <h1 class="app-title">CloudCollect</h1>
-            <p class="app-subtitle">Professional Debt Management Platform</p>
-            <p class="app-description">Multi-tenant secure access</p>
+    <div class="app-container">
+      <div class="login-card">
+        <div class="logo-container">
+          <div class="logo" title="Click to auto-fill demo credentials">CC</div>
+          <h1 class="app-title">CloudCollect</h1>
+          <p class="app-subtitle">Professional Debt Management Platform</p>
+          <p class="app-description">Multi-tenant secure access</p>
+        </div>
+        
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label" for="companyCode">
+              Company Code <span style="color: rgb(var(--error-500));">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="companyCode" 
+              class="form-input company-code-input" 
+              placeholder="0000"
+              maxlength="4"
+              required
+            />
           </div>
           
-          <form id="loginForm">
-            <div class="form-group">
-              <label class="form-label" for="companyCode">
-                Company Code <span style="color: rgb(var(--error-500));">*</span>
-              </label>
-              <input 
-                type="text" 
-                id="companyCode" 
-                class="form-input company-code-input" 
-                placeholder="0000"
-                maxlength="4"
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label" for="email">
-                Email Address <span style="color: rgb(var(--error-500));">*</span>
-              </label>
-              <input 
-                type="email" 
-                id="email" 
-                class="form-input" 
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label" for="password">
-                Password <span style="color: rgb(var(--error-500));">*</span>
-              </label>
-              <input 
-                type="password" 
-                id="password" 
-                class="form-input" 
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-            
-            <div id="errorMessage" class="error-message" style="display: none;"></div>
-            
-            <button type="submit" class="btn" id="loginBtn">
-              Sign in to Company <span id="companyDisplay">****</span>
-            </button>
-          </form>
-          
-          <div class="demo-credentials">
-            <div class="demo-title">🚀 Demo Credentials</div>
-            <div class="demo-item">
-              <span class="demo-label">Company Code:</span>
-              <span class="demo-value">1234</span>
-            </div>
-            <div class="demo-item">
-              <span class="demo-label">Email:</span>
-              <span class="demo-value">admin@example.com</span>
-            </div>
-            <div class="demo-item">
-              <span class="demo-label">Password:</span>
-              <span class="demo-value">password</span>
-            </div>
+          <div class="form-group">
+            <label class="form-label" for="email">
+              Email Address <span style="color: rgb(var(--error-500));">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              class="form-input" 
+              placeholder="Enter your email"
+              required
+            />
           </div>
           
-          <div class="status-indicator">
-            <div class="status-dot"></div>
-            System Status: All services operational
+          <div class="form-group">
+            <label class="form-label" for="password">
+              Password <span style="color: rgb(var(--error-500));">*</span>
+            </label>
+            <input 
+              type="password" 
+              id="password" 
+              class="form-input" 
+              placeholder="Enter your password"
+              required
+            />
           </div>
           
-          <div class="footer">
-            © 2025 CloudCollect. All rights reserved.<br>
-            Secure multi-tenant debt management platform
+          <div id="errorMessage" class="error-message" style="display: none;"></div>
+          
+          <button type="submit" class="btn" id="loginBtn">
+            Sign in to Company <span id="companyDisplay">****</span>
+          </button>
+        </form>
+        
+        <div class="demo-credentials">
+          <div class="demo-title">🚀 Demo Credentials</div>
+          <div class="demo-item">
+            <span class="demo-label">Company Code:</span>
+            <span class="demo-value">1234</span>
           </div>
+          <div class="demo-item">
+            <span class="demo-label">Email:</span>
+            <span class="demo-value">admin@example.com</span>
+          </div>
+          <div class="demo-item">
+            <span class="demo-label">Password:</span>
+            <span class="demo-value">password</span>
+          </div>
+        </div>
+        
+        <div class="status-indicator">
+          <div class="status-dot"></div>
+          System Status: All services operational
+        </div>
+        
+        <div class="footer">
+          © 2025 CloudCollect. All rights reserved.<br>
+          Secure multi-tenant debt management platform
         </div>
       </div>
     </div>
@@ -504,17 +523,6 @@ export default {
       }
       
       function showSuccess() {
-        // Store auth data
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('user', JSON.stringify({
-          id: 'user-1',
-          name: 'Admin User',
-          email: document.getElementById('email').value,
-          companyId: 'company-1234',
-          companyCode: document.getElementById('companyCode').value,
-          role: 'Administrator'
-        }));
-        
         // Show success message
         loginBtn.innerHTML = '✓ Success! Redirecting...';
         loginBtn.style.background = 'rgb(var(--success-500))';
@@ -536,18 +544,538 @@ export default {
   </body>
 </html>`;
 
-      return new Response(html, {
-        headers: {
-          'Content-Type': 'text/html',
-          ...corsHeaders
-        }
-      });
+  return new Response(html, {
+    headers: {
+      'Content-Type': 'text/html',
+      'Cache-Control': 'no-cache'
+    }
+  });
+}
 
-    } catch (error) {
-      console.error('Server Error:', error);
+function serveDashboardApp() {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💼</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CloudCollect - Dashboard</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
       
-      // Return a beautiful error page
-      const errorHtml = `<!DOCTYPE html>
+      :root {
+        --primary-50: 240 249 255;
+        --primary-100: 224 242 254;
+        --primary-200: 186 230 253;
+        --primary-300: 125 211 252;
+        --primary-400: 56 189 248;
+        --primary-500: 14 165 233;
+        --primary-600: 2 132 199;
+        --primary-700: 3 105 161;
+        --primary-800: 7 89 133;
+        --primary-900: 12 74 110;
+        --primary-950: 8 47 73;
+        
+        --neutral-50: 250 250 250;
+        --neutral-100: 245 245 245;
+        --neutral-200: 229 229 229;
+        --neutral-300: 212 212 212;
+        --neutral-400: 163 163 163;
+        --neutral-500: 115 115 115;
+        --neutral-600: 82 82 82;
+        --neutral-700: 64 64 64;
+        --neutral-800: 38 38 38;
+        --neutral-900: 23 23 23;
+        --neutral-950: 10 10 10;
+        
+        --success-500: 34 197 94;
+        --error-500: 239 68 68;
+        --warning-500: 245 158 11;
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        background: rgb(var(--neutral-50));
+        color: rgb(var(--neutral-900));
+        font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+      }
+      
+      .app {
+        display: flex;
+        min-height: 100vh;
+      }
+      
+      .sidebar {
+        width: 280px;
+        background: white;
+        border-right: 1px solid rgb(var(--neutral-200));
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+      
+      .logo-section {
+        display: flex;
+        align-items: center;
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgb(var(--neutral-100));
+      }
+      
+      .logo {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, rgb(var(--primary-500)), rgb(var(--primary-600)));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+        box-shadow: 0 4px 12px rgba(var(--primary-500), 0.3);
+      }
+      
+      .logo-text h2 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: rgb(var(--neutral-900));
+      }
+      
+      .logo-text p {
+        font-size: 0.75rem;
+        color: rgb(var(--neutral-500));
+      }
+      
+      .nav-menu {
+        list-style: none;
+      }
+      
+      .nav-item {
+        margin-bottom: 0.5rem;
+      }
+      
+      .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        color: rgb(var(--neutral-600));
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        font-weight: 500;
+      }
+      
+      .nav-link:hover, .nav-link.active {
+        background: rgb(var(--primary-50));
+        color: rgb(var(--primary-700));
+      }
+      
+      .nav-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 0.75rem;
+      }
+      
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .header {
+        background: white;
+        border-bottom: 1px solid rgb(var(--neutral-200));
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+      
+      .header-left h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: rgb(var(--neutral-900));
+      }
+      
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-left: auto;
+      }
+      
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, rgb(var(--primary-500)), rgb(var(--primary-600)));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      
+      .user-details h3 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: rgb(var(--neutral-900));
+      }
+      
+      .user-details p {
+        font-size: 0.8rem;
+        color: rgb(var(--neutral-500));
+      }
+      
+      .logout-btn {
+        background: rgb(var(--error-500));
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      
+      .logout-btn:hover {
+        background: rgb(var(--error-600));
+        transform: translateY(-1px);
+      }
+      
+      .content {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
+      }
+      
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      
+      .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgb(var(--neutral-200));
+        transition: all 0.2s ease;
+      }
+      
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+      
+      .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      
+      .stat-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: rgb(var(--neutral-600));
+      }
+      
+      .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+      }
+      
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: rgb(var(--neutral-900));
+        margin-bottom: 0.5rem;
+      }
+      
+      .stat-change {
+        font-size: 0.8rem;
+        color: rgb(var(--success-500));
+        font-weight: 500;
+      }
+      
+      .welcome-section {
+        background: linear-gradient(135deg, rgb(var(--primary-500)), rgb(var(--primary-600)));
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 25px rgba(var(--primary-500), 0.3);
+      }
+      
+      .welcome-section h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      
+      .welcome-section p {
+        opacity: 0.9;
+        font-size: 1rem;
+      }
+      
+      .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+      
+      .action-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        text-align: center;
+      }
+      
+      .action-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+      }
+      
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        color: rgb(var(--neutral-500));
+      }
+      
+      .spinner {
+        width: 24px;
+        height: 24px;
+        border: 2px solid rgb(var(--neutral-200));
+        border-top: 2px solid rgb(var(--primary-500));
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 0.5rem;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="logo-section">
+          <div class="logo">CC</div>
+          <div class="logo-text">
+            <h2>CloudCollect</h2>
+            <p>v2.0</p>
+          </div>
+        </div>
+        
+        <nav>
+          <ul class="nav-menu">
+            <li class="nav-item">
+              <a href="/dashboard" class="nav-link active">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
+                </svg>
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/dashboard/accounts" class="nav-link">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                </svg>
+                Accounts
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/dashboard/payments" class="nav-link">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                Payments
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/dashboard/reports" class="nav-link">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                Reports
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/dashboard/settings" class="nav-link">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                Settings
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+      
+      <main class="main-content">
+        <header class="header">
+          <div class="header-left">
+            <h1>Dashboard</h1>
+          </div>
+          <div class="header-right">
+            <div class="user-info">
+              <div class="user-avatar">AU</div>
+              <div class="user-details">
+                <h3>Admin User</h3>
+                <p>Company 1234</p>
+              </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+          </div>
+        </header>
+        
+        <div class="content">
+          <div class="welcome-section">
+            <h2>Welcome back, Admin!</h2>
+            <p>Here's what's happening with your debt collection operations today.</p>
+            
+            <div class="quick-actions">
+              <a href="/dashboard/accounts" class="action-btn">View Accounts</a>
+              <a href="/dashboard/payments" class="action-btn">Process Payment</a>
+              <a href="/dashboard/reports" class="action-btn">Generate Report</a>
+              <a href="/dashboard/import" class="action-btn">Import Data</a>
+            </div>
+          </div>
+          
+          <div class="dashboard-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Total Accounts</span>
+                <div class="stat-icon" style="background: rgb(var(--primary-500));">👥</div>
+              </div>
+              <div class="stat-value" id="totalAccounts">-</div>
+              <div class="stat-change">+12% from last month</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Outstanding Debt</span>
+                <div class="stat-icon" style="background: rgb(var(--error-500));">💰</div>
+              </div>
+              <div class="stat-value" id="totalDebt">-</div>
+              <div class="stat-change">+8% from last month</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Collected This Month</span>
+                <div class="stat-icon" style="background: rgb(var(--success-500));">📈</div>
+              </div>
+              <div class="stat-value" id="collectedDebt">-</div>
+              <div class="stat-change">+23% from last month</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Success Rate</span>
+                <div class="stat-icon" style="background: rgb(var(--warning-500));">🎯</div>
+              </div>
+              <div class="stat-value" id="successRate">-</div>
+              <div class="stat-change">+5% from last month</div>
+            </div>
+          </div>
+          
+          <div id="loadingIndicator" class="loading">
+            <div class="spinner"></div>
+            Loading dashboard data...
+          </div>
+        </div>
+      </main>
+    </div>
+    
+    <script>
+      // Load dashboard data
+      async function loadDashboardData() {
+        try {
+          const response = await fetch('/api/dashboard/stats');
+          const data = await response.json();
+          
+          // Update stats
+          document.getElementById('totalAccounts').textContent = data.totalAccounts?.toLocaleString() || '0';
+          document.getElementById('totalDebt').textContent = formatCurrency(data.totalDebt || 0);
+          document.getElementById('collectedDebt').textContent = formatCurrency(data.collectedDebt || 0);
+          document.getElementById('successRate').textContent = (data.successRate || 0) + '%';
+          
+          // Hide loading indicator
+          document.getElementById('loadingIndicator').style.display = 'none';
+        } catch (error) {
+          console.error('Error loading dashboard data:', error);
+          document.getElementById('loadingIndicator').innerHTML = '<div style="color: rgb(var(--error-500));">Error loading data. Please refresh the page.</div>';
+        }
+      }
+      
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD'
+        }).format(amount);
+      }
+      
+      function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+          window.location.href = '/';
+        }
+      }
+      
+      // Load data when page loads
+      document.addEventListener('DOMContentLoaded', loadDashboardData);
+    </script>
+  </body>
+</html>`;
+
+  return new Response(html, {
+    headers: {
+      'Content-Type': 'text/html',
+      'Cache-Control': 'no-cache'
+    }
+  });
+}
+
+function serveErrorPage(error: any) {
+  const errorHtml = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -594,6 +1122,12 @@ export default {
         border-radius: 8px;
         text-decoration: none;
         font-weight: 600;
+        display: inline-block;
+        transition: all 0.2s ease;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
       }
     </style>
   </head>
@@ -608,16 +1142,13 @@ export default {
   </body>
 </html>`;
 
-      return new Response(errorHtml, {
-        status: 500,
-        headers: { 
-          'Content-Type': 'text/html',
-          ...corsHeaders 
-        }
-      });
+  return new Response(errorHtml, {
+    status: 500,
+    headers: { 
+      'Content-Type': 'text/html'
     }
-  },
-};
+  });
+}
 
 async function handleDebtorRoutes(
   request: Request, 
