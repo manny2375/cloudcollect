@@ -1,0 +1,23 @@
+name = "cloudcollect"
+main = "src/workers/api.ts"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "npm run install:clean && npm run build"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cloudcollect-db"
+database_id = "a14bd3ec-a872-423d-bc68-ea1757e28a69"
+
+[vars]
+ENVIRONMENT = "production"
+
+# Single server configuration
+# Serves both frontend and API from the same Worker
+
+# Example company codes for development
+# Production companies will have their own 4-digit codes
+# 1234 = Demo Company
+# 5678 = Test Company
+# 9999 = Development Company
