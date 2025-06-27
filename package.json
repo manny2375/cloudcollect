@@ -1,0 +1,58 @@
+{
+  "name": "cloud-collect",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "wrangler:dev": "wrangler dev",
+    "wrangler:deploy": "wrangler deploy",
+    "pages:dev": "wrangler pages dev dist",
+    "pages:deploy": "npm run build && wrangler pages deploy dist --project-name=cloudcollect-frontend",
+    "db:create": "wrangler d1 create cloudcollect-db",
+    "db:migrate": "wrangler d1 migrations apply cloudcollect-db",
+    "db:studio": "wrangler d1 studio cloudcollect-db",
+    "install:clean": "rm -f package-lock.json && npm install"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.1",
+    "date-fns": "^3.3.1",
+    "docx": "^8.5.0",
+    "file-saver": "^2.0.5",
+    "lucide-react": "^0.330.0",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.50.1",
+    "react-router-dom": "^6.22.0",
+    "uuid": "^9.0.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241218.0",
+    "@types/date-fns": "^2.5.3",
+    "@types/file-saver": "^2.0.7",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@types/uuid": "^9.0.8",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
+    "wrangler": "^3.84.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
