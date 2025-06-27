@@ -4,8 +4,7 @@ A modern, full-featured debt collection management platform built with React, Ty
 
 ## 🚀 Live Demo
 
-- **Frontend**: [https://cloudcollect-frontend.pages.dev](https://cloudcollect-frontend.pages.dev)
-- **API**: [https://cloudcollect.lamado.workers.dev](https://cloudcollect.lamado.workers.dev)
+- **Application**: [https://cloudcollect.lamado.workers.dev](https://cloudcollect.lamado.workers.dev)
 
 ## 🔐 Demo Login
 
@@ -33,9 +32,8 @@ Use these credentials to test the application:
 - **Frontend**: React 18, TypeScript, Tailwind CSS
 - **Backend**: Cloudflare Workers
 - **Database**: Cloudflare D1 (SQLite)
-- **Deployment**: Cloudflare Pages
+- **Deployment**: Cloudflare Workers
 - **Payment Processing**: Authorize.net
-- **File Storage**: Cloudflare R2 (optional)
 - **Document Generation**: docx library for Word documents
 
 ## 🔒 Multi-Tenant Architecture
@@ -87,14 +85,15 @@ wrangler login
 
 1. Create a D1 database:
 ```bash
-npm run db:create
+wrangler d1 create cloudcollect-db
 ```
 
 2. Update `wrangler.toml` with your database ID
 
 3. Run migrations:
 ```bash
-npm run db:migrate
+wrangler d1 execute cloudcollect-db --file=supabase/migrations/20250627055315_pink_sun.sql
+wrangler d1 execute cloudcollect-db --file=supabase/migrations/20250627055340_violet_torch.sql
 ```
 
 ### Development
@@ -200,44 +199,12 @@ database_name = "cloudcollect-db"
 database_id = "your-database-id-here"
 ```
 
-## 🏢 Company Setup
-
-### Adding New Companies
-
-To add a new company to the system:
-
-1. Generate a unique 4-digit code
-2. Create company record in database:
-
-```sql
-INSERT INTO companies (id, code, name, email, status) 
-VALUES ('company-uuid', '1234', 'Company Name', 'contact@company.com', 'active');
-```
-
-3. Create initial admin user for the company
-4. Set up company-specific roles and permissions
-
-### Company Code Management
-
-- Codes must be exactly 4 digits (0000-9999)
-- Each code must be unique across the system
-- Codes are validated on login and API requests
-- Invalid codes are rejected immediately
-
 ## 🚀 Deployment
-
-### Frontend Deployment (Cloudflare Pages)
-
-The frontend is automatically deployed to Cloudflare Pages when you push to the main branch.
-
-**Manual Deployment:**
-1. Build the project: `npm run build`
-2. Deploy to Cloudflare Pages via dashboard or CLI
 
 ### Backend Deployment (Cloudflare Workers)
 
 ```bash
-npm run wrangler:deploy
+wrangler deploy
 ```
 
 ## ⚡ Performance Optimizations
